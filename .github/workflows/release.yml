@@ -1,0 +1,36 @@
+name: Rust PMCLI Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build:
+    name: Build Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          override: true
+
+      - name: Build Release
+        run: cargo build --release
+
+      - name: Package binary
+        run: |
+          mkdir -p release
+          cp target/release/pmcli release/pmcli
+          tar -czf release/pmcli-linux.tar.gz -C release pmcli
+
+      - name: Create GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: release/pmcli-linux.tar.gz
+          tag: ${{ github.ref_name }}
