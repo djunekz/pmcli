@@ -19,17 +19,16 @@ jobs:
           "aarch64-linux-android"
         ]
     steps:
-      # Checkout repo
       - uses: actions/checkout@v3
 
-      # Install Rust
+      # Setup Rust
       - name: Setup Rust
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           override: true
 
-      # Install cross
+      # Install cross (cross-compilation helper)
       - name: Install cross
         run: cargo install cross
 
