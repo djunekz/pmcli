@@ -8,23 +8,23 @@ use crossterm::{
 
 use ratatui::{
     backend::CrosstermBackend,
-    Terminal,
+    layout::{Constraint, Direction, Layout},
+    style::{Color, Style},
     widgets::{Block, Borders, List, ListItem, Paragraph, Wrap},
-    style::{Style, Color},
-    layout::{Layout, Constraint, Direction},
+    Terminal,
 };
 
+use crate::models::{Status, Task};
 use dirs::home_dir;
-use crate::models::{Task, Status};
 
 pub fn run(project: &str) {
-    let path = home_dir().unwrap()
+    let path = home_dir()
+        .unwrap()
         .join(".pmcli")
         .join(project)
         .join("tasks.json");
 
-    let mut tasks: Vec<Task> =
-        serde_json::from_str(&fs::read_to_string(&path).unwrap()).unwrap();
+    let mut tasks: Vec<Task> = serde_json::from_str(&fs::read_to_string(&path).unwrap()).unwrap();
 
     enable_raw_mode().unwrap();
     let mut stdout = io::stdout();
@@ -41,7 +41,8 @@ pub fn run(project: &str) {
         let filtered: Vec<&Task> = if search.is_empty() {
             tasks.iter().collect()
         } else {
-            tasks.iter()
+            tasks
+                .iter()
                 .filter(|t| t.description.to_lowercase().contains(&search))
                 .collect()
         };
@@ -50,84 +51,79 @@ pub fn run(project: &str) {
             selected = filtered.len() - 1;
         }
 
-        terminal.draw(|f| {
-            let layout = Layout::default()
-                .direction(Direction::Vertical)
-                .constraints([
-                    Constraint::Length(3),
-                    Constraint::Min(1),
-                ])
-                .split(f.size());
+        terminal
+            .draw(|f| {
+                let layout = Layout::default()
+                    .direction(Direction::Vertical)
+                    .constraints([Constraint::Length(3), Constraint::Min(1)])
+                    .split(f.size());
 
-            let body = Layout::default()
-                .direction(Direction::Horizontal)
-                .constraints([
-                    Constraint::Percentage(45),
-                    Constraint::Percentage(55),
-                ])
-                .split(layout[1]);
+                let body = Layout::default()
+                    .direction(Direction::Horizontal)
+                    .constraints([Constraint::Percentage(45), Constraint::Percentage(55)])
+                    .split(layout[1]);
 
-            // ===== SEARCH BAR =====
-            let search_bar = Paragraph::new(
-                if search_mode {
+                // ===== SEARCH BAR =====
+                let search_bar = Paragraph::new(if search_mode {
                     format!("🔍 /{}", search)
                 } else {
                     "Press / to search | ↑↓ Enter b q".into()
-                }
-            )
-            .block(Block::default().borders(Borders::ALL).title("Search"));
+                })
+                .block(Block::default().borders(Borders::ALL).title("Search"));
 
-            f.render_widget(search_bar, layout[0]);
+                f.render_widget(search_bar, layout[0]);
 
-            // ===== TASK LIST =====
-            let items: Vec<ListItem> = filtered.iter().map(|t| {
-                let color = match t.status {
-                    Status::Todo => Color::White,
-                    Status::Done => Color::Green,
-                    Status::Blocked => Color::Red,
-                };
+                // ===== TASK LIST =====
+                let items: Vec<ListItem> = filtered
+                    .iter()
+                    .map(|t| {
+                        let color = match t.status {
+                            Status::Todo => Color::White,
+                            Status::Done => Color::Green,
+                            Status::Blocked => Color::Red,
+                        };
 
-                ListItem::new(format!(
-                    "[{}] {:<8} {}",
-                    t.id,
-                    format!("{:?}", t.status),
-                    t.description
-                ))
-                .style(Style::default().fg(color))
-            }).collect();
+                        ListItem::new(format!(
+                            "[{}] {:<8} {}",
+                            t.id,
+                            format!("{:?}", t.status),
+                            t.description
+                        ))
+                        .style(Style::default().fg(color))
+                    })
+                    .collect();
 
-            let list = List::new(items)
-                .block(Block::default().title("Tasks").borders(Borders::ALL))
-                .highlight_style(Style::default().bg(Color::Blue));
+                let list = List::new(items)
+                    .block(Block::default().title("Tasks").borders(Borders::ALL))
+                    .highlight_style(Style::default().bg(Color::Blue));
 
-            let mut state = ratatui::widgets::ListState::default();
-            state.select(Some(selected));
-            f.render_stateful_widget(list, body[0], &mut state);
+                let mut state = ratatui::widgets::ListState::default();
+                state.select(Some(selected));
+                f.render_stateful_widget(list, body[0], &mut state);
 
-            // ===== DETAIL PANEL =====
-            if let Some(task) = filtered.get(selected) {
-                let detail = Paragraph::new(format!(
-                    "ID       : {}\n\
+                // ===== DETAIL PANEL =====
+                if let Some(task) = filtered.get(selected) {
+                    let detail = Paragraph::new(format!(
+                        "ID       : {}\n\
                      Status   : {:?}\n\
                      Priority : {}\n\
                      Deadline : {}\n\
                      Owner    : {}\n\n\
                      Description:\n{}",
-                    task.id,
-                    task.status,
-                    task.priority,
-                    task.deadline
-                        .map(|d| d.to_string())
-                        .unwrap_or("—".into()),
-                    task.owner,
-                    task.description
-                ))
-                .wrap(Wrap { trim: false })
-                .block(Block::default().title("Detail").borders(Borders::ALL));
+                        task.id,
+                        task.status,
+                        task.priority,
+                        task.deadline.map(|d| d.to_string()).unwrap_or("—".into()),
+                        task.owner,
+                        task.description
+                    ))
+                    .wrap(Wrap { trim: false })
+                    .block(Block::default().title("Detail").borders(Borders::ALL));
 
-                f.render_widget(detail, body[1]);
-            }
-        }).unwrap();
+                    f.render_widget(detail, body[1]);
+                }
+            })
+            .unwrap();
 
         if event::poll(Duration::from_millis(200)).unwrap() {
             if let Event::Key(key) = event::read().unwrap() {
@@ -162,9 +158,7 @@ pub fn run(project: &str) {
                     }
 
                     KeyCode::Up if !search_mode => {
-                        if selected > 0 {
-                            selected -= 1;
-                        }
+                        selected = selected.saturating_sub(1);
                     }
 
                     KeyCode::Enter if !filtered.is_empty() && !search_mode => {
