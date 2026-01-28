@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 clap = { version = "4.5", features = ["derive"] }
 serde = { version = "1.0", features = ["derive"] }
+openssl = { version = "0.10", features = ["vendored"] }
 serde_json = "1.0"
 ratatui = "0.26"
 crossterm = "0.27"
