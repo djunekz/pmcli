@@ -9,7 +9,8 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
+
+      - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Setup Rust
@@ -18,10 +19,10 @@ jobs:
           toolchain: stable
           override: true
 
-      - name: Build pmcli release binary
+      - name: Build pmcli
         run: cargo build --release
 
-      - name: Package tar.gz
+      - name: Package pmcli-version.tar.gz
         run: |
           VERSION=${GITHUB_REF#refs/tags/}
           VERSION=${VERSION#v}
@@ -32,21 +33,25 @@ jobs:
           tar -czvf release/$TAR -C $TMP pmcli
           rm -rf $TMP
 
-      - name: Generate attestation
+      - name: Import GPG private key
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+        run: |
+          echo "$GPG_PRIVATE_KEY" | gpg --batch --import
+      - name: Sign release artifact
+        env:
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
           VERSION=${GITHUB_REF#refs/tags/}
           VERSION=${VERSION#v}
-          ARTIFACT="release/pmcli-$VERSION.tar.gz"
-          ATTEST="release/pmcli-$VERSION.attestation.json"
-          sha256sum $ARTIFACT | awk '{print $1}' > hash.txt
-          echo "{\"artifact\":\"$ARTIFACT\",\"sha256\":\"$(cat hash.txt)\",\"builder\":\"GitHub Actions\",\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" > $ATTEST
-          rm hash.txt
+          TAR="pmcli-$VERSION.tar.gz"
+          gpg --batch --yes --pinentry-mode loopback --passphrase "$GPG_PASSPHRASE" --armor --output release/$TAR.asc --detach-sign release/$TAR
 
-      - name: Upload release artifact + attestation
+      - name: Upload release artifacts
         uses: softprops/action-gh-release@v1
         with:
           files: |
             release/*.tar.gz
-            release/*.attestation.json
+            release/*.tar.gz.asc
         env:
           GITHUB_TOKEN: ${{ secrets.termux }}
