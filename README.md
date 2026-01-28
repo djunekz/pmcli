@@ -2,7 +2,7 @@
 
 [![Latest Release](https://img.shields.io/github/v/release/djunekz/pmcli?style=for-the-badge&logo=github&logoColor=white)](https://github.com/djunekz/pmcli/releases)
 [![License](https://img.shields.io/github/license/djunekz/pmcli?style=for-the-badge&logo=open-source-initiative&logoColor=white)](https://github.com/djunekz/pmcli/blob/main/LICENSE)
-[![Build](https://img.shields.io/github/actions/workflow/status/djunekz/pmcli/rust.yml?branch=main&style=for-the-badge&logo=rust&logoColor=white)](https://github.com/djunekz/pmcli/actions)
+[![Build](https://img.shields.io/github/actions/workflow/status/djunekz/pmcli/rust.yml?branch=main&style=for-the-badge&logo=rust&logoColor=white)](https://github.com/djunekz/pmcli/actions/workflows/rust.yml)
 [![Downloads](https://img.shields.io/github/downloads/djunekz/pmcli/total?style=for-the-badge&logo=protocols.io&logoColor=white)](https://github.com/djunekz/pmcli/releases)
 [![Termux](https://img.shields.io/badge/Platform-Termux-brightgreen?style=for-the-badge&logo=android&logoColor=white)](https://termux.com/)
 [![Linux](https://img.shields.io/badge/Platform-Linux-blue?style=for-the-badge&logo=linux&logoColor=white)](https://www.kernel.org/)
