@@ -2,9 +2,9 @@ name: Rust CI for pmcli
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
 
 jobs:
   build-and-test:
@@ -22,6 +22,17 @@ jobs:
           toolchain: stable
           override: true
 
+      - name: Cache cargo registry and build
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
       - name: Add Rust target
         run: rustup target add ${{ matrix.target }}
 
@@ -36,3 +47,10 @@ jobs:
 
       - name: Lint code
         run: cargo clippy --all-targets --all-features -- -D warnings
+
+      - name: Upload release binary (optional)
+        if: github.event_name == 'push'
+        uses: actions/upload-artifact@v3
+        with:
+          name: pmcli-${{ matrix.target }}
+          path: target/${{ matrix.target }}/release/pmcli
