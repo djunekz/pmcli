@@ -1,4 +1,4 @@
-name: Rust PMCLI Release
+name: Build & Release pmcli
 
 on:
   push:
@@ -6,31 +6,149 @@ on:
       - 'v*.*.*'
 
 jobs:
-  build:
-    name: Build Release
+  build-linux:
     runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        target: [ "x86_64-unknown-linux-gnu", "aarch64-unknown-linux-gnu" ]
     steps:
       - uses: actions/checkout@v3
 
-      - name: Install Rust
+      - name: Setup Rust
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-          profile: minimal
           override: true
 
-      - name: Build Release
-        run: cargo build --release
+      - name: Add Rust target
+        run: rustup target add ${{ matrix.target }}
 
-      - name: Package binary
+      - name: Build Linux target
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Package Linux target
         run: |
-          mkdir -p release
-          cp target/release/pmcli release/pmcli
-          tar -czf release/pmcli-linux.tar.gz -C release pmcli
+          VERSION=${GITHUB_REF#refs/tags/}
+          VERSION=${VERSION#v}
+          mkdir -p release/linux
+          TAR="pmcli-$VERSION-linux-${{ matrix.target }}.tar.gz"
+          TMP=$(mktemp -d)
+          cp target/${{ matrix.target }}/release/pmcli $TMP/pmcli
+          tar -czvf release/linux/$TAR -C $TMP pmcli
+          rm -rf $TMP
 
-      - name: Create GitHub Release
-        uses: ncipollo/release-action@v1
+  build-linux-universal:
+    runs-on: ubuntu-latest
+    needs: build-linux
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
         with:
-          artifacts: release/pmcli-linux.tar.gz
-          tag: ${{ github.ref_name }}
+          toolchain: stable
+          override: true
+      - name: Build universal Linux
+        run: |
+          cargo build --release
+          VERSION=${GITHUB_REF#refs/tags/}
+          VERSION=${VERSION#v}
+          mkdir -p release/linux
+          TAR="pmcli-$VERSION-linux-universal.tar.gz"
+          TMP=$(mktemp -d)
+          cp target/release/pmcli $TMP/pmcli
+          tar -czvf release/linux/$TAR -C $TMP pmcli
+          rm -rf $TMP
+
+  build-termux:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target: [ "armv7-linux-androideabi", "aarch64-linux-android" ]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Add Rust target
+        run: rustup target add ${{ matrix.target }}
+
+      - name: Build Termux target
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Package Termux target
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          VERSION=${VERSION#v}
+          mkdir -p release/termux
+          TAR="pmcli-$VERSION-termux-${{ matrix.target }}.tar.gz"
+          TMP=$(mktemp -d)
+          cp target/${{ matrix.target }}/release/pmcli $TMP/pmcli
+          tar -czvf release/termux/$TAR -C $TMP pmcli
+          rm -rf $TMP
+
+  build-termux-universal:
+    runs-on: ubuntu-latest
+    needs: build-termux
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - name: Build universal Termux
+        run: |
+          cargo build --release
+          VERSION=${GITHUB_REF#refs/tags/}
+          VERSION=${VERSION#v}
+          mkdir -p release/termux
+          TAR="pmcli-$VERSION-termux-universal.tar.gz"
+          TMP=$(mktemp -d)
+          cp target/release/pmcli $TMP/pmcli
+          tar -czvf release/termux/$TAR -C $TMP pmcli
+          rm -rf $TMP
+
+  build-all-universal:
+    runs-on: ubuntu-latest
+    needs: [build-linux-universal, build-termux-universal]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - name: Build All-Universal Binary
+        run: |
+          # Build statically linked binary for all targets
+          RUSTFLAGS='-C target-feature=+crt-static' cargo build --release
+          
+          VERSION=${GITHUB_REF#refs/tags/}
+          VERSION=${VERSION#v}
+          mkdir -p release/all-universal
+          
+          TAR="pmcli-$VERSION-all-universal.tar.gz"
+          TMP=$(mktemp -d)
+          cp target/release/pmcli $TMP/pmcli
+          tar -czvf release/all-universal/$TAR -C $TMP pmcli
+          rm -rf $TMP
+          
+          echo "✅ Created pmcli-$VERSION-all-universal.tar.gz"
+
+  release:
+    needs: [build-linux-universal, build-termux-universal, build-all-universal]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Upload all binaries to release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            release/linux/*.tar.gz
+            release/termux/*.tar.gz
+            release/all-universal/*.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
