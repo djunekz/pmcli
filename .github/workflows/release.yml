@@ -1,4 +1,4 @@
-name: Build & Release pmcli (Cross-compile)
+name: Build & Release pmcli Universal
 
 on:
   push:
@@ -6,18 +6,8 @@ on:
       - 'v*.*.*'
 
 jobs:
-  build:
+  build-universal:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        target: [
-          "x86_64-unknown-linux-gnu",
-          "aarch64-unknown-linux-gnu",
-          "x86_64-unknown-linux-musl",
-          "aarch64-unknown-linux-musl",
-          "armv7-linux-androideabi",
-          "aarch64-linux-android"
-        ]
     steps:
       - uses: actions/checkout@v3
 
@@ -28,53 +18,45 @@ jobs:
           toolchain: stable
           override: true
 
-      # Install cross for cross-compiling
+      # Install cross crate untuk cross-compiling
       - name: Install cross
         run: cargo install cross
 
-      # Build each target using cross
-      - name: Build ${{ matrix.target }}
+      # Build universal binary (static, vendored OpenSSL)
+      - name: Build pmcli universal
         run: |
+          # Ambil versi dari tag
           VERSION=${GITHUB_REF#refs/tags/}
           VERSION=${VERSION#v}
-          mkdir -p release/${{ matrix.target }}
-          cross build --release --target ${{ matrix.target }}
-          TAR="pmcli-$VERSION-${{ matrix.target }}.tar.gz"
-          TMP=$(mktemp -d)
-          cp target/${{ matrix.target }}/release/pmcli $TMP/pmcli
-          tar -czvf release/${{ matrix.target }}/$TAR -C $TMP pmcli
-          rm -rf $TMP
 
-  build-universal:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
-      - name: Build universal binary
-        run: |
-          VERSION=${GITHUB_REF#refs/tags/}
-          VERSION=${VERSION#v}
-          mkdir -p release/universal
-          cargo build --release
-          TAR="pmcli-$VERSION-universal.tar.gz"
+          # Buat direktori release
+          mkdir -p release
+
+          # Cross-build dengan vendored OpenSSL
+          cross build --release --target x86_64-unknown-linux-gnu
+          cross build --release --target aarch64-unknown-linux-gnu
+          cross build --release --target x86_64-unknown-linux-musl
+          cross build --release --target aarch64-unknown-linux-musl
+          cross build --release --target armv7-linux-androideabi
+          cross build --release --target aarch64-linux-android
+
+          # Salin binary utama (misal target x86_64 host)
+          cp target/release/pmcli release/pmcli
+
+          # Buat tar.gz universal
+          TAR="pmcli-$VERSION.tar.gz"
           TMP=$(mktemp -d)
-          cp target/release/pmcli $TMP/pmcli
-          tar -czvf release/universal/$TAR -C $TMP pmcli
+          cp release/pmcli $TMP/pmcli
+          tar -czvf release/$TAR -C $TMP pmcli
           rm -rf $TMP
 
   release:
-    needs: [build, build-universal]
+    needs: build-universal
     runs-on: ubuntu-latest
     steps:
-      - name: Upload all binaries to release
+      - name: Upload universal tar.gz to GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          files: |
-            release/*/*.tar.gz
+          files: release/*.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
