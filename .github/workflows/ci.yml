@@ -1,23 +1,38 @@
-name: pmcli CI
+name: Rust CI for pmcli
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main ]
   pull_request:
+    branches: [ main ]
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        target: [ "x86_64-unknown-linux-gnu", "aarch64-unknown-linux-gnu" ]
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
 
-      - name: Build
-        run: cargo build --release
+      - name: Add Rust target
+        run: rustup target add ${{ matrix.target }}
+
+      - name: Build project
+        run: cargo build --release --target ${{ matrix.target }}
 
       - name: Run tests
-        run: cargo test
+        run: cargo test --all --release --target ${{ matrix.target }}
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Lint code
+        run: cargo clippy --all-targets --all-features -- -D warnings
