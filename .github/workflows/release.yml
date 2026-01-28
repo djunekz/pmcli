@@ -1,4 +1,4 @@
-name: Build & Release pmcli Universal
+name: Build & Release pmcli with Attestation
 
 on:
   push:
@@ -6,57 +6,47 @@ on:
       - 'v*.*.*'
 
 jobs:
-  build-universal:
+  build-and-attest:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
 
-      # Setup Rust
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v3
+
       - name: Setup Rust
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           override: true
 
-      # Install cross crate untuk cross-compiling
-      - name: Install cross
-        run: cargo install cross
+      - name: Build release binary
+        run: cargo build --release
 
-      # Build universal binary (static, vendored OpenSSL)
-      - name: Build pmcli universal
+      - name: Prepare version and paths
         run: |
-          # Ambil versi dari tag
           VERSION=${GITHUB_REF#refs/tags/}
           VERSION=${VERSION#v}
-
-          # Buat direktori release
           mkdir -p release
-
-          # Cross-build dengan vendored OpenSSL
-          cross build --release --target x86_64-unknown-linux-gnu
-          cross build --release --target aarch64-unknown-linux-gnu
-          cross build --release --target x86_64-unknown-linux-musl
-          cross build --release --target aarch64-unknown-linux-musl
-          cross build --release --target armv7-linux-androideabi
-          cross build --release --target aarch64-linux-android
-
-          # Salin binary utama (misal target x86_64 host)
-          cp target/release/pmcli release/pmcli
-
-          # Buat tar.gz universal
           TAR="pmcli-$VERSION.tar.gz"
           TMP=$(mktemp -d)
-          cp release/pmcli $TMP/pmcli
+          cp target/release/pmcli $TMP/pmcli
           tar -czvf release/$TAR -C $TMP pmcli
           rm -rf $TMP
 
-  release:
-    needs: build-universal
-    runs-on: ubuntu-latest
-    steps:
-      - name: Upload universal tar.gz to GitHub Release
+      - name: Generate Attestation (SLSA provenance)
+        uses: sigstore/cosign-installer@v2
+      - run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          VERSION=${VERSION#v}
+          TAR="release/pmcli-$VERSION.tar.gz"
+          ATTESTATION="release/pmcli-$VERSION.attestation.json"
+          cosign attest --key ${{ secrets.COSIGN_KEY }} --predicate /dev/null $TAR --output $ATTESTATION
+
+      - name: Upload release artifact + attestation
         uses: softprops/action-gh-release@v1
         with:
-          files: release/*.tar.gz
+          files: |
+            release/*.tar.gz
+            release/*.attestation.json
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
