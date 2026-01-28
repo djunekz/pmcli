@@ -1,4 +1,4 @@
-name: Build & Release pmcli with Attestation
+name: Build & Release pmcli
 
 on:
   push:
@@ -6,11 +6,10 @@ on:
       - 'v*.*.*'
 
 jobs:
-  build-and-attest:
+  release:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout source
+      - name: Checkout repo
         uses: actions/checkout@v3
 
       - name: Setup Rust
@@ -19,10 +18,10 @@ jobs:
           toolchain: stable
           override: true
 
-      - name: Build release binary
+      - name: Build pmcli release binary
         run: cargo build --release
 
-      - name: Prepare version and paths
+      - name: Package tar.gz
         run: |
           VERSION=${GITHUB_REF#refs/tags/}
           VERSION=${VERSION#v}
@@ -33,14 +32,15 @@ jobs:
           tar -czvf release/$TAR -C $TMP pmcli
           rm -rf $TMP
 
-      - name: Generate Attestation (SLSA provenance)
-        uses: sigstore/cosign-installer@v2
-      - run: |
+      - name: Generate attestation
+        run: |
           VERSION=${GITHUB_REF#refs/tags/}
           VERSION=${VERSION#v}
-          TAR="release/pmcli-$VERSION.tar.gz"
-          ATTESTATION="release/pmcli-$VERSION.attestation.json"
-          cosign attest --key ${{ secrets.COSIGN_KEY }} --predicate /dev/null $TAR --output $ATTESTATION
+          ARTIFACT="release/pmcli-$VERSION.tar.gz"
+          ATTEST="release/pmcli-$VERSION.attestation.json"
+          sha256sum $ARTIFACT | awk '{print $1}' > hash.txt
+          echo "{\"artifact\":\"$ARTIFACT\",\"sha256\":\"$(cat hash.txt)\",\"builder\":\"GitHub Actions\",\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" > $ATTEST
+          rm hash.txt
 
       - name: Upload release artifact + attestation
         uses: softprops/action-gh-release@v1
