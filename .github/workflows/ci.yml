@@ -2,16 +2,16 @@ name: Rust CI for pmcli
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
     steps:
-      # 1. Checkout repo
-      - name: Checkout code
+      # 1. Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v3
 
       # 2. Setup Rust stable
@@ -21,18 +21,24 @@ jobs:
           toolchain: stable
           override: true
 
-      # 3. Build release binary
-      - name: Build pmcli
-        run: cargo build --release
+      # 3. Ensure Rustfmt & Clippy installed
+      - name: Install Rustfmt & Clippy
+        run: |
+          rustup component add rustfmt
+          rustup component add clippy
 
-      # 4. Run tests
-      - name: Run tests
-        run: cargo test --all --release
-
-      # 5. Check formatting
-      - name: Check code formatting
+      # 4. Check code formatting (fail CI if not formatted)
+      - name: Check formatting
         run: cargo fmt --all -- --check
 
-      # 6. Lint code
-      - name: Lint with Clippy
+      # 5. Lint code (fail CI on warnings)
+      - name: Lint code with Clippy
         run: cargo clippy --all-targets --all-features -- -D warnings
+
+      # 6. Build release binary
+      - name: Build release
+        run: cargo build --release
+
+      # 7. Run tests
+      - name: Run tests
+        run: cargo test --all --release
