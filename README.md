@@ -8,6 +8,7 @@ pmcli focuses on **simplicity, transparency, and Git-friendly workflows**.
 All data is stored locally in human-readable files — no database, no lock-in.
 
 ---
+[![Rust](https://github.com/djunekz/pmcli/actions/workflows/rust.yml/badge.svg)](https://github.com/djunekz/pmcli/actions/workflows/rust.yml)
 
 ## Why pmcli?
 
