@@ -1,5 +1,5 @@
-use serde::{Serialize, Deserialize};
-use chrono::{NaiveDate, DateTime, Local};
+use chrono::{DateTime, Local, NaiveDate};
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum Status {

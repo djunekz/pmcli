@@ -1,17 +1,16 @@
-use std::fs;
 use dirs::home_dir;
+use std::fs;
 
-use crate::models::{Task, Status};
+use crate::models::{Status, Task};
 
 pub fn run(project: &str, id: u32) {
-    let path = home_dir().unwrap()
+    let path = home_dir()
+        .unwrap()
         .join(".pmcli")
         .join(project)
         .join("tasks.json");
 
-    let mut tasks: Vec<Task> =
-        serde_json::from_str(&fs::read_to_string(&path).unwrap())
-            .unwrap();
+    let mut tasks: Vec<Task> = serde_json::from_str(&fs::read_to_string(&path).unwrap()).unwrap();
 
     let mut found = false;
 

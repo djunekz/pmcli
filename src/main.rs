@@ -1,8 +1,8 @@
 use clap::{Parser, Subcommand};
 
-mod models;
 mod commands;
 mod config;
+mod models;
 
 #[derive(Parser)]
 #[command(name = "pmcli")]
@@ -16,9 +16,7 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     /// Create new project
-    Create {
-        name: String,
-    },
+    Create { name: String },
 
     /// Add task to project
     AddTask {
@@ -44,102 +42,65 @@ enum Commands {
     },
 
     /// Mark task as done
-    DoneTask {
-        project: String,
-        id: u32,
-    },
+    DoneTask { project: String, id: u32 },
 
     /// List all projects
     List,
 
     /// Add project note
-    Note {
-        project: String,
-        note: String,
-    },
+    Note { project: String, note: String },
 
     /// Export project data
-    Export {
-        project: String,
-    },
+    Export { project: String },
 
     /// Terminal UI
-    Tui {
-        project: String,
-    },
+    Tui { project: String },
 
     // ===== GIT SYNC =====
-
     /// Initialize git repository
-    GitInit {
-        project: String,
-    },
+    GitInit { project: String },
 
     /// Commit project changes
-    GitCommit {
-        project: String,
-        message: String,
-    },
+    GitCommit { project: String, message: String },
 
     /// Push to remote repository
-    GitPush {
-        project: String,
-    },
+    GitPush { project: String },
 
     /// Pull from remote repository
-    GitPull {
-        project: String,
-    },
+    GitPull { project: String },
 }
 
 fn main() {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Create { name } =>
-            commands::create::run(&name),
+        Commands::Create { name } => commands::create::run(&name),
 
         Commands::AddTask {
             project,
             task,
             priority,
             deadline,
-        } =>
-            commands::add_task::run(
-                &project,
-                &task,
-                priority.as_deref(),
-                deadline.as_deref(),
-            ),
+        } => commands::add_task::run(&project, &task, priority.as_deref(), deadline.as_deref()),
 
-        Commands::Tasks { project, filter } =>
-            commands::tasks::run(&project, filter.as_deref()),
+        Commands::Tasks { project, filter } => commands::tasks::run(&project, filter.as_deref()),
 
-        Commands::DoneTask { project, id } =>
-            commands::done_task::run(&project, id),
+        Commands::DoneTask { project, id } => commands::done_task::run(&project, id),
 
-        Commands::List =>
-            commands::list::run(),
+        Commands::List => commands::list::run(),
 
-        Commands::Note { project, note } =>
-            commands::note::run(&project, &note),
+        Commands::Note { project, note } => commands::note::run(&project, &note),
 
-        Commands::Export { project } =>
-            commands::export::run(&project),
+        Commands::Export { project } => commands::export::run(&project),
 
-        Commands::Tui { project } =>
-            commands::tui::run(&project),
+        Commands::Tui { project } => commands::tui::run(&project),
 
-        Commands::GitInit { project } =>
-            commands::git::init(&project),
+        Commands::GitInit { project } => commands::git::init(&project),
 
-        Commands::GitCommit { project, message } =>
-            commands::git::commit(&project, &message),
+        Commands::GitCommit { project, message } => commands::git::commit(&project, &message),
 
-        Commands::GitPush { project } =>
-            commands::git::push(&project),
+        Commands::GitPush { project } => commands::git::push(&project),
 
-        Commands::GitPull { project } =>
-            commands::git::pull(&project),
+        Commands::GitPull { project } => commands::git::pull(&project),
     }
 }

@@ -1,6 +1,6 @@
-use std::fs;
-use dirs::home_dir;
 use crate::models::Project;
+use dirs::home_dir;
+use std::fs;
 
 pub fn run() {
     let base = home_dir().unwrap().join(".pmcli");

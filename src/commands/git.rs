@@ -1,13 +1,11 @@
-use std::process::Command;
-use std::env;
-use std::path::PathBuf;
 use dirs::home_dir;
 use git2::{Repository, Signature};
+use std::env;
+use std::path::PathBuf;
+use std::process::Command;
 
 fn project_path(project: &str) -> PathBuf {
-    home_dir().unwrap()
-        .join(".pmcli")
-        .join(project)
+    home_dir().unwrap().join(".pmcli").join(project)
 }
 
 pub fn init(project: &str) {
@@ -21,26 +19,32 @@ pub fn commit(project: &str, message: &str) {
     let repo = Repository::open(&path).expect("Not a git repository");
 
     let mut index = repo.index().unwrap();
-    index.add_all(["*"].iter(), git2::IndexAddOption::DEFAULT, None).unwrap();
+    index
+        .add_all(["*"].iter(), git2::IndexAddOption::DEFAULT, None)
+        .unwrap();
     index.write().unwrap();
 
     let tree_id = index.write_tree().unwrap();
     let tree = repo.find_tree(tree_id).unwrap();
 
-    let sig = repo.signature()
+    let sig = repo
+        .signature()
         .unwrap_or(Signature::now("pmcli", "pmcli@local").unwrap());
 
-    let parent = repo.head()
+    let parent = repo
+        .head()
         .ok()
         .and_then(|h| h.target())
         .and_then(|t| repo.find_commit(t).ok());
 
     match parent {
         Some(p) => {
-            repo.commit(Some("HEAD"), &sig, &sig, message, &tree, &[&p]).unwrap();
+            repo.commit(Some("HEAD"), &sig, &sig, message, &tree, &[&p])
+                .unwrap();
         }
         None => {
-            repo.commit(Some("HEAD"), &sig, &sig, message, &tree, &[]).unwrap();
+            repo.commit(Some("HEAD"), &sig, &sig, message, &tree, &[])
+                .unwrap();
         }
     }
 
@@ -87,11 +91,7 @@ pub fn push(project: &str) {
         return;
     }
 
-    let auth_remote = remote.replacen(
-        "https://",
-        &format!("https://{}@", token),
-        1,
-    );
+    let auth_remote = remote.replacen("https://", &format!("https://{}@", token), 1);
 
     let status = Command::new("git")
         .arg("push")
@@ -147,11 +147,7 @@ pub fn pull(project: &str) {
         return;
     }
 
-    let auth_remote = remote.replacen(
-        "https://",
-        &format!("https://{}@", token),
-        1,
-    );
+    let auth_remote = remote.replacen("https://", &format!("https://{}@", token), 1);
 
     let status = Command::new("git")
         .arg("pull")
