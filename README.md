@@ -1,5 +1,15 @@
 # pmcli — Project Manager CLI
 
+[![Latest Release](https://img.shields.io/github/v/release/djunekz/pmcli?style=for-the-badge&logo=github&logoColor=white)](https://github.com/djunekz/pmcli/releases)
+[![License](https://img.shields.io/github/license/djunekz/pmcli?style=for-the-badge&logo=open-source-initiative&logoColor=white)](https://github.com/djunekz/pmcli/blob/main/LICENSE)
+[![Build](https://img.shields.io/github/actions/workflow/status/djunekz/pmcli/rust.yml?branch=main&style=for-the-badge&logo=rust&logoColor=white)](https://github.com/djunekz/pmcli/actions)
+[![Downloads](https://img.shields.io/github/downloads/djunekz/pmcli/total?style=for-the-badge&logo=protocols.io&logoColor=white)](https://github.com/djunekz/pmcli/releases)
+[![Termux](https://img.shields.io/badge/Platform-Termux-brightgreen?style=for-the-badge&logo=android&logoColor=white)](https://termux.com/)
+[![Linux](https://img.shields.io/badge/Platform-Linux-blue?style=for-the-badge&logo=linux&logoColor=white)](https://www.kernel.org/)
+[![TUI Ready](https://img.shields.io/badge/TUI-Yes-purple?style=for-the-badge&logo=heroUI&logoColor=white)](https://github.com/djunekz/pmcli)
+[![Git Sync Ready](https://img.shields.io/badge/GitSync-Yes-orange?style=for-the-badge&logo=git&logoColor=white)](https://github.com/djunekz/pmcli)
+[![Rust Version](https://img.shields.io/badge/Rust-Stable-orange?style=for-the-badge&logo=rust&logoColor=white)](https://www.rust-lang.org/)
+
 pmcli is a **production-grade project and task management CLI** written in Rust.
 It is designed for developers and power users who work primarily in the terminal,
 especially on **Termux and Linux** environments.
@@ -8,7 +18,6 @@ pmcli focuses on **simplicity, transparency, and Git-friendly workflows**.
 All data is stored locally in human-readable files — no database, no lock-in.
 
 ---
-[![Rust](https://github.com/djunekz/pmcli/actions/workflows/rust.yml/badge.svg)](https://github.com/djunekz/pmcli/actions/workflows/rust.yml)
 
 ## Why pmcli?
 
