@@ -48,7 +48,7 @@ jobs:
           gpg --batch --yes --pinentry-mode loopback --passphrase "$GPG_PASSPHRASE" --armor --output release/$TAR.asc --detach-sign release/$TAR
 
       - name: Upload release artifacts
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v3
         with:
           files: |
             release/*.tar.gz
