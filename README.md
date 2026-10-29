@@ -179,7 +179,7 @@ Yes. It favors simplicity and transparency over complexity.
 
 ## Contributing
 
-Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) and open an issue before submitting large changes.
+Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) and the [Code of Conduct](CODE_OF_CONDUCT.md), and open an issue before submitting large changes.
 
 ```bash
 cargo test
