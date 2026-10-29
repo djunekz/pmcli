@@ -54,7 +54,6 @@ pub fn commit(project: &str, message: &str) {
 pub fn push(project: &str) {
     let path = project_path(project);
 
-    // 1️⃣ NORMAL PUSH (USE GIT CREDENTIAL)
     let normal = Command::new("git")
         .arg("push")
         .current_dir(&path)
@@ -66,7 +65,6 @@ pub fn push(project: &str) {
         return;
     }
 
-    // 2️⃣ FALLBACK TOKEN
     let token = match env::var("GITHUB_TOKEN") {
         Ok(t) => t,
         Err(_) => {
@@ -110,7 +108,6 @@ pub fn push(project: &str) {
 pub fn pull(project: &str) {
     let path = project_path(project);
 
-    // 1️⃣ NORMAL PULL
     let normal = Command::new("git")
         .arg("pull")
         .current_dir(&path)
@@ -122,7 +119,6 @@ pub fn pull(project: &str) {
         return;
     }
 
-    // 2️⃣ FALLBACK TOKEN
     let token = match env::var("GITHUB_TOKEN") {
         Ok(t) => t,
         Err(_) => {

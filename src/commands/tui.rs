@@ -63,7 +63,6 @@ pub fn run(project: &str) {
                     .constraints([Constraint::Percentage(45), Constraint::Percentage(55)])
                     .split(layout[1]);
 
-                // ===== SEARCH BAR =====
                 let search_bar = Paragraph::new(if search_mode {
                     format!("🔍 /{}", search)
                 } else {
@@ -73,7 +72,6 @@ pub fn run(project: &str) {
 
                 f.render_widget(search_bar, layout[0]);
 
-                // ===== TASK LIST =====
                 let items: Vec<ListItem> = filtered
                     .iter()
                     .map(|t| {
@@ -101,7 +99,6 @@ pub fn run(project: &str) {
                 state.select(Some(selected));
                 f.render_stateful_widget(list, body[0], &mut state);
 
-                // ===== DETAIL PANEL =====
                 if let Some(task) = filtered.get(selected) {
                     let detail = Paragraph::new(format!(
                         "ID       : {}\n\

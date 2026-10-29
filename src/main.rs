@@ -56,7 +56,6 @@ enum Commands {
     /// Terminal UI
     Tui { project: String },
 
-    // ===== GIT SYNC =====
     /// Initialize git repository
     GitInit { project: String },
 

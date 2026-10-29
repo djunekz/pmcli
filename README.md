@@ -1,5 +1,9 @@
 # pmcli — Project Manager CLI
 
+<p align="center">
+  <img src="assets/logo.svg" alt="pmcli terminal preview" width="720">
+</p>
+
 [![Latest Release](https://img.shields.io/github/v/release/djunekz/pmcli?style=for-the-badge&logo=github&logoColor=white)](https://github.com/djunekz/pmcli/releases)
 [![License](https://img.shields.io/github/license/djunekz/pmcli?style=for-the-badge&logo=open-source-initiative&logoColor=white)](https://github.com/djunekz/pmcli/blob/main/LICENSE)
 [![Build](https://img.shields.io/github/actions/workflow/status/djunekz/pmcli/rust.yml?branch=master&style=for-the-badge&logo=rust&logoColor=white)](https://github.com/djunekz/pmcli/actions)
@@ -175,11 +179,14 @@ Yes. It favors simplicity and transparency over complexity.
 
 ## Contributing
 
-Contributions are welcome.
-Please open an issue before submitting large changes.
+Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) and open an issue before submitting large changes.
+
+```bash
+cargo test
+```
 
 ---
 
 ## License
 
-[LICENSE](https://github.com/djunekz/pmcli/LICENSE)MIT License © 2026
+Released under the [MIT License](LICENSE) © 2026.

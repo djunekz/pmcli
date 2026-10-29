@@ -16,7 +16,6 @@ pub fn run(project: &str, filter: Option<&str>) {
     let current_user = env::var("USER").unwrap_or("unknown".into());
 
     for task in tasks {
-        // ===== FILTER =====
         if let Some(f) = filter {
             match f {
                 "mine" if task.owner != current_user => continue,

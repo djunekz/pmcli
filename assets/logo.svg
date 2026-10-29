@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="260" viewBox="0 0 720 260" role="img" aria-label="pmcli terminal preview">
+  <rect width="720" height="260" rx="14" fill="#0f172a"/>
+  <rect width="720" height="40" rx="14" fill="#1e293b"/>
+  <rect y="26" width="720" height="14" fill="#1e293b"/>
+  <circle cx="26" cy="20" r="6" fill="#ef4444"/>
+  <circle cx="48" cy="20" r="6" fill="#f59e0b"/>
+  <circle cx="70" cy="20" r="6" fill="#22c55e"/>
+  <g font-family="Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="15">
+    <text x="24" y="72" fill="#94a3b8">$ <tspan fill="#e2e8f0">pmcli create myproject</tspan></text>
+    <text x="24" y="96" fill="#22c55e">Project 'myproject' created</text>
+    <text x="24" y="126" fill="#94a3b8">$ <tspan fill="#e2e8f0">pmcli add-task myproject "Design architecture" -p high</tspan></text>
+    <text x="24" y="150" fill="#22c55e">Task added</text>
+    <text x="24" y="180" fill="#94a3b8">$ <tspan fill="#e2e8f0">pmcli tasks myproject</tspan></text>
+    <text x="24" y="204" fill="#e2e8f0">[1] TODO     | high   | Design architecture | owner: you</text>
+    <text x="24" y="238" fill="#38bdf8" font-size="18" font-weight="bold">pmcli <tspan fill="#94a3b8" font-weight="normal" font-size="14">Project Manager CLI</tspan></text>
+  </g>
+</svg>

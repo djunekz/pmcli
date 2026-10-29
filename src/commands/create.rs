@@ -18,7 +18,7 @@ pub fn run(name: &str) {
 
     let meta = Project {
         name: name.to_string(),
-        created_at: Local::now(), // ✅ FIXED
+        created_at: Local::now(),
     };
 
     fs::write(
