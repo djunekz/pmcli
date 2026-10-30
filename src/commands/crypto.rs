@@ -1,44 +1,30 @@
+use aes_gcm::aead::{Aead, AeadCore, KeyInit, OsRng};
 use aes_gcm::{Aes256Gcm, Key, Nonce};
-use aes_gcm::aead::{Aead, KeyInit};
-use rand::RngCore;
-use base64::{encode, decode};
+use base64::{engine::general_purpose::STANDARD, Engine};
+use sha2::{Digest, Sha256};
+
+fn derive_key(password: &str) -> Key<Aes256Gcm> {
+    Sha256::digest(password.as_bytes())
+}
 
 pub fn encrypt(data: &str, password: &str) -> String {
-    let key = Key::<Aes256Gcm>::from_slice(&sha256(password));
-    let cipher = Aes256Gcm::new(key);
+    let cipher = Aes256Gcm::new(&derive_key(password));
+    let nonce = Aes256Gcm::generate_nonce(&mut OsRng);
 
-    let mut nonce_bytes = [0u8; 12];
-    rand::thread_rng().fill_bytes(&mut nonce_bytes);
+    let ciphertext = cipher.encrypt(&nonce, data.as_bytes()).unwrap();
 
-    let ciphertext = cipher
-        .encrypt(Nonce::from_slice(&nonce_bytes), data.as_bytes())
-        .unwrap();
-
-    format!(
-        "{}:{}",
-        encode(nonce_bytes),
-        encode(ciphertext)
-    )
+    format!("{}:{}", STANDARD.encode(nonce), STANDARD.encode(ciphertext))
 }
 
 pub fn decrypt(data: &str, password: &str) -> String {
-    let parts: Vec<&str> = data.split(':').collect();
-    let nonce = decode(parts[0]).unwrap();
-    let ciphertext = decode(parts[1]).unwrap();
+    let (nonce_part, cipher_part) = data.split_once(':').expect("Invalid encrypted payload");
+    let nonce_bytes = STANDARD.decode(nonce_part).unwrap();
+    let ciphertext = STANDARD.decode(cipher_part).unwrap();
 
-    let key = Key::<Aes256Gcm>::from_slice(&sha256(password));
-    let cipher = Aes256Gcm::new(key);
-
+    let cipher = Aes256Gcm::new(&derive_key(password));
     let plain = cipher
-        .decrypt(Nonce::from_slice(&nonce), ciphertext.as_ref())
+        .decrypt(Nonce::from_slice(&nonce_bytes), ciphertext.as_ref())
         .unwrap();
 
     String::from_utf8(plain).unwrap()
-}
-
-fn sha256(input: &str) -> [u8; 32] {
-    use sha2::{Sha256, Digest};
-    let mut hasher = Sha256::new();
-    hasher.update(input.as_bytes());
-    hasher.finalize().into()
 }
