@@ -5,19 +5,18 @@ on:
     tags:
       - 'v*.*.*'
 
+permissions:
+  contents: write
+
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
 
       - name: Setup Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
+        uses: dtolnay/rust-toolchain@stable
 
       - name: Build pmcli
         run: cargo build --release
@@ -38,6 +37,7 @@ jobs:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
         run: |
           echo "$GPG_PRIVATE_KEY" | gpg --batch --import
+
       - name: Sign release artifact
         env:
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
@@ -48,10 +48,10 @@ jobs:
           gpg --batch --yes --pinentry-mode loopback --passphrase "$GPG_PASSPHRASE" --armor --output release/$TAR.asc --detach-sign release/$TAR
 
       - name: Upload release artifacts
-        uses: softprops/action-gh-release@v3
+        uses: softprops/action-gh-release@v2
         with:
           files: |
             release/*.tar.gz
             release/*.tar.gz.asc
         env:
-          GITHUB_TOKEN: ${{ secrets.termux }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
