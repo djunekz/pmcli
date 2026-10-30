@@ -56,7 +56,7 @@ pub fn run(project: &str) {
                 let layout = Layout::default()
                     .direction(Direction::Vertical)
                     .constraints([Constraint::Length(3), Constraint::Min(1)])
-                    .split(f.size());
+                    .split(f.area());
 
                 let body = Layout::default()
                     .direction(Direction::Horizontal)
